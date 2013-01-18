@@ -2,7 +2,7 @@
   (use ql.ql ql.gui-viewer))
 
 (def box1-house-owning
-  (form
+  (form 
     [boolean has-sold-house   "Did you sell a house in 2010?"]
     [boolean has-bought-house "Did you buy a house in 2010?"]
     [boolean has-maint-loan   "Did you enter a loan for maintenance/reconstruction?"]
