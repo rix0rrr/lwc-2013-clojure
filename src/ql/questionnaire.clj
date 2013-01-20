@@ -13,3 +13,5 @@
 
 (defn -main []
   (println (render box1-house-owning)))
+
+(-main)
