@@ -10,7 +10,5 @@
      [currency private-debt  "Private debts for the sold house"]
      [calc value-residue (- selling-price private-debt) "Value residue"]])
 
-#_(defn -main []
-  (box1-house-owning (gui-renderer)))
-
-(box1-house-owning gui-renderer)
+(defn -main []
+  (box1-house-owning gui-renderer))

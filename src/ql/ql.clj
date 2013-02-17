@@ -28,6 +28,7 @@
   (on-change-all [x listener])
   (get-widget [this]))
 
+
 (defn operator? [sym]
   "Return whether the given symbol refers to an operator exported to the DSL
 
