@@ -1,6 +1,6 @@
 (ns ql.gui-viewer
   (:use seesaw.core
-        ql.ql
+        ql.ql ql.expr
         [clojure.core.match :only [match]]))
 
 (defn to-int [s]

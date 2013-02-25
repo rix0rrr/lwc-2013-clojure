@@ -1,5 +1,5 @@
 (ns ql.ql
-  (:use [clojure.core.match :only [match]]))
+  (:use ql.expr [clojure.core.match :only [match]]))
 
 (def types-to-widgets {'currency 'number
                        'string 'text
@@ -27,32 +27,6 @@
   (update [this trigger values])
   (on-change-all [x listener])
   (get-widget [this]))
-
-
-(defn operator? [sym]
-  "Return whether the given symbol refers to an operator exported to the DSL
-
-  Currently, the entire Clojure standard library is exported."
-  (resolve sym))
-
-(defn extractor [name values]
-  "Return the extractor function for the given variable name"
-  `(let [x# (~values (quote ~name))]
-     (if-not (nil? x#) x#
-       (throw (Exception. (str "Could not find " (quote ~name) " in " ~values))))))
-
-(defn tr-expr [expr valsym]
-  "Translate every free variable in an expression into a function application"
-  (cond 
-    (seq? expr) (map #(tr-expr % valsym) expr)
-    (symbol? expr) (if (operator? expr) expr (extractor expr valsym))
-    :else expr))
-
-(defn expr-fn [expression]
-  "Translate an expression into a function of a map"
-  (let [valsym (gensym)]
-    `(fn [~valsym]
-       ~(tr-expr expression valsym))))
 
 (defn create-input-widget [renderer type name caption]
   (let [w (new-widget renderer type caption)]
@@ -101,13 +75,13 @@
 
       (get-widget [this] w))))
 
-(defn widget-creators [element renderer]
+(defn widget-creators [element renderer var-names]
   "Generate create-widget calls for the given element"
   (match [element]
          [['calc  name expr caption]]  `(create-output-widget ~renderer
                                                               '~(types-to-widgets 'calc)
-                                                              '~name ~caption ~(expr-fn expr))
-         [['group expr & subelements]] `(create-group-widget ~renderer ~(expr-fn expr) ~@(map #(widget-creators % renderer) subelements))
+                                                              '~name ~caption ~(expr-fn expr var-names))
+         [['group expr & subelements]] `(create-group-widget ~renderer ~(expr-fn expr var-names) ~@(map #(widget-creators % renderer var-names) subelements))
          [[type   name caption]]       `(create-input-widget ~renderer '~(types-to-widgets type) '~name ~caption)))
 
 (defn variables [element]
@@ -129,12 +103,12 @@
   Turns a form definition into a function that will accept a renderer
   at runtime and call that renderer to display the form."
   (let [form-body (into '[group true] body)
-        vars (variables form-body)
+        var-types (variables form-body)
         rendersym (gensym)]
     `(defn ~name [~rendersym]
        (init ~rendersym)
-       (let [values#       (atom (hash-map ~@(defaults vars)))        ; Holds the name -> value map
-             root-widget# ~(widget-creators form-body rendersym)
+       (let [values#       (atom (hash-map ~@(defaults var-types)))        ; Holds the name -> value map
+             root-widget# ~(widget-creators form-body rendersym (keys var-types))
 
              trigger-update# (fn [source#]
                                "Trigger the update function with all current values"
