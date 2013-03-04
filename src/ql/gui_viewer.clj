@@ -3,38 +3,50 @@
         ql.ql ql.expr
         [clojure.core.match :only [match]]))
 
-(defn to-int [s]
-  (if (= s "") 0
-    (Integer/parseInt s)))
-
-(defn from-int [i]
-  (str i))
-
 (defn has-focus [target]
   (let [^java.awt.Component w (to-widget target)]
     (.isFocusOwner w)))
 
-(defn- create-gui-widget [factory-fn caption value-key event-type getter setter]
-  (let [widget (factory-fn)
-        panel (horizontal-panel :items [(label caption) widget])]
+(defn- create-widget [widget caption value-key event-type getter setter value]
+  (let [panel (horizontal-panel
+                :items [(label caption :h-text-position left) widget])]
+    (config! widget value-key (setter value))
+
     (reify interactive-widget
-      (set-value [this val]
-        (if (not (has-focus widget))
-          (config! widget value-key (setter val))))
+      (widget-value [this]
+        (getter (config widget value-key)))
 
-      (on-change [this listener]
-        (listen widget event-type (fn [e]
-                                    (listener (getter (config widget value-key))))))
-      (get-panel [this] panel))))
+      (widget-value! [this val]
+        (config! widget value-key (setter val)))
 
-(defn- render-widget [type caption]
+      (widget-listen [this listener]
+        (listen widget event-type (fn [e] (listener))))
+
+      (widget-panel [this] panel))))
+
+
+(defn- create-group [child-panels]
+  (let [panel (vertical-panel :items (map widget-panel child-panels))]
+    (reify interactive-widget
+      (widget-value [this]
+        undefined) ; Group doesn't have a value
+
+      (widget-value! [this vis?]
+        (config! panel :visible? (to-bool vis?)))
+
+      (widget-listen [this listener]) ; Nothing to do
+
+      (widget-panel [this] panel))))
+
+(defn- create-correct-widget [type value caption]
   "Render a single widget of a given type"
   (case type
-    number   (create-gui-widget text caption :text :key-released to-int from-int)
-    text     (create-gui-widget text caption :text :key-released identity identity)
-    checkbox (create-gui-widget checkbox caption :selected? :action identity identity)
-    label    (create-gui-widget label caption :text :action identity identity)
-    (create-gui-widget label (str "Unknown widget type " type) :text :key-released identity identity))) ; Event won't ever happen
+    number   (create-widget (text)     caption :text :key-released to-int from-int value)
+    text     (create-widget (text)     caption :text :key-released from-string to-string value)
+    checkbox (create-widget (checkbox) caption :selected? :action from-bool to-bool value)
+    label    (create-widget (label)    caption :text :action from-string to-string value)
+             (create-widget (label)    (str "Unknown widget type " type) :text :key-released from-string to-string value))) ; Event won't ever happen
+
 
 (defn repack-on-resize [frame]
   "Attach a listener to all children inside this frame, repacking the frame whenever a child gets hidden or shown"
@@ -50,21 +62,18 @@
     (init [this]
       (native!))
 
-    (new-widget [this type caption] (render-widget type caption))
+    (new-widget [this type value caption]
+      (create-correct-widget type value caption))
 
     (new-group [this widgets]
-      (let [panel (vertical-panel :items (map get-panel widgets))]
-        (reify interactive-widget
-          (set-value [this vis?] (config! panel :visible? vis?))
-          (on-change [this listener])
-          (get-panel [this] panel))))
+      (create-group widgets))
 
     (display [this widget]
       (->
         (frame :title "No name yet"
                :resizable? false
                :content (grid-panel :columns 2
-                                    :items [(get-panel widget)]))
+                                    :items [(widget-panel widget)]))
         (pack!)
         (repack-on-resize)
         (show!)))))

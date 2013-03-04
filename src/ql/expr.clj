@@ -8,12 +8,33 @@
   (= x undefined))
 
 (defn safe [f]
-  "Execute a function, returning undefined if executing the original function produces an exception"
+  "Return a function that upon executing returns undefined if executing the original function produces an exception"
   (fn [& args]
     (try (apply f args)
       (catch Exception e#
         (println e#)
         undefined))))
+
+(def to-int
+  "Convert a string to an integer, or undefined"
+  (safe (fn [s]
+          (Integer/parseInt s))))
+
+(defn from-int [i]
+  "Convert a lifted integer to a string"
+  (if (undefined? i)
+    ""
+    (str i)))
+
+(defn to-bool [b]
+  (if (= true b) true false))
+
+(defn from-bool [b] b)
+
+(defn to-string [s]
+  (if (undefined? s) "" (str s)))
+
+(defn from-string [s] s)
 
 (defn lift [f]
   "Lift a function to return undefined if any of its arguments are undefined,
@@ -31,6 +52,7 @@
   {'+   (safe (lift +))
    '-   (safe (lift -))
    '/   (safe (lift /))
+   '*   (safe (lift *))
    '=   (safe (lift =))
    '<   (safe (lift <))
    '<=  (safe (lift <=))
@@ -81,7 +103,7 @@
         (seq? expr) (tr-application expr)
         (literal? expr) expr
         (var-name? expr var-names) (extractor expr mapname)
-        :else (throw (Exception. (str "Unrecognized expression " expr)))))
+        :else (throw (Exception. (str "Unrecognized variable in expression: " expr)))))
 
     `(fn [~mapname]
         ~(tr-expr expr))))
