@@ -2,6 +2,10 @@
   (:use clojure.test clojure.pprint
         [clojure.core.match :only [match]]))
 
+
+(defn invalid-ql [msg]
+  (throw (Exception. msg)))
+
 (def undefined 'undefined)
 
 (defn undefined? [x]
@@ -82,7 +86,7 @@
   "Return the extractor function for the given variable name"
   `(let [x# (~values (quote ~name))]
      (if-not (nil? x#) x#
-       (throw (Exception. (str "Could not find " (quote ~name) " in " ~values))))))
+       (invalid-ql (str "Could not find " (quote ~name) " in " ~values)))))
 
 (defn expr-fn [expr var-names]
   "Translate an expression into a function of a map, passing the declared variable names"
@@ -95,7 +99,7 @@
       (let [head (first expr)
             tail (rest expr)]
         (if (operator? head) `((operators (quote ~head)) ~@(map tr-expr tail))
-          (throw (Exception. (str "Unrecognized operator " head))))))
+          (invalid-ql (str "Unrecognized operator " head)))))
 
     (defn- tr-expr [expr]
       "Translate parts of an expression"
@@ -103,7 +107,7 @@
         (seq? expr) (tr-application expr)
         (literal? expr) expr
         (var-name? expr var-names) (extractor expr mapname)
-        :else (throw (Exception. (str "Unrecognized variable in expression: " expr)))))
+        :else (invalid-ql (str "Unrecognized variable in expression: " expr))))
 
     `(fn [~mapname]
         ~(tr-expr expr))))

@@ -9,7 +9,7 @@
 
 (defn- create-widget [widget caption value-key event-type getter setter value]
   (let [panel (horizontal-panel
-                :items [(label caption :h-text-position left) widget])]
+                :items [(label :text caption :h-text-position :left) widget])]
     (config! widget value-key (setter value))
 
     (reify interactive-widget

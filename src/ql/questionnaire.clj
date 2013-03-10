@@ -14,4 +14,3 @@
 
 (defn -main []
   (box1-house-owning gui-renderer {}))
-(-main)

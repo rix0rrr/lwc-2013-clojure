@@ -3,6 +3,9 @@
         clojure.test clojure.pprint
         [clojure.core.match :only [match]]))
 
+(defn logic-error [msg]
+  (throw (Exception. msg)))
+
 (def types-to-widgets {'currency 'number
                        'string 'text
                        'boolean 'checkbox
@@ -79,6 +82,7 @@
     (el-widget [this] widget)))
 
 (defn group-element [renderer value-function & children]
+  (if (some nil? children) (logic-error "A child passed to (group-element) is nil!"))
   (let [widget (new-group renderer (map el-widget children))]
     (reify form-element
 
@@ -107,21 +111,26 @@
 
       (el-widget [this] widget))))
 
+(defn widget-for-type [type]
+  "Return the widget to associate with the given input type, or error out if unknown"
+  (if (contains? types-to-widgets type)
+    (types-to-widgets type)
+    (invalid-ql (str "Unknown input type: " type))))
 
 (defn create-elements [element renderer values]
   "Generate create-widget calls for the given element"
   (match [element]
          [['calc  name expr caption]]  `(output-element '~name
                                                         ~(expr-fn expr (keys values))
-                                                        (new-widget ~renderer '~(types-to-widgets 'calc) ~(values name) ~caption))
+                                                        (new-widget ~renderer '~(widget-for-type 'calc) ~(values name) ~caption))
                                                 
          [['group expr & subelements]] `(group-element ~renderer
                                                        ~(expr-fn expr (keys values))
                                                        ~@(map #(create-elements % renderer values) subelements))
 
          [[type   name caption]]      `(input-element '~name
-                                                      (new-widget ~renderer '~(types-to-widgets type) ~(values name) ~caption))))
-
+                                                      (new-widget ~renderer '~(widget-for-type type) ~(values name) ~caption))
+         :else (invalid-ql (str "Unrecogized QL form: " element))))
 
 (defn variables [element]
   "Return a map of variables to types of the elements in the form"
