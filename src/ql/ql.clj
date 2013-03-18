@@ -1,6 +1,8 @@
 (ns ql.ql
   (:use ql.expr
-        clojure.test clojure.pprint
+        ql.checking
+        clojure.test
+        clojure.pprint
         [clojure.core.match :only [match]]))
 
 (defn logic-error [msg]
@@ -153,6 +155,11 @@
         var-types (variables root-group)
         default-values (defaults var-types)
         renderer-sym (gensym)]
+
+    ; Static analysis
+    (check-form root-group)
+
+    ; Return the run-time function
     `(defn ~name [~renderer-sym initial-values#]
        (init ~renderer-sym)
        (let [root-el# ~(create-elements root-group renderer-sym default-values)]

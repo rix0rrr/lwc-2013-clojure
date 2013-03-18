@@ -12,5 +12,10 @@
      [calc twice (* 2 value-residue) "Twice that"]
      ])
 
+(defform illegal-cyclic-form
+         [group x
+          [boolean x "X?"]]
+         )
+
 (defn -main []
   (box1-house-owning gui-renderer {}))
