@@ -35,19 +35,21 @@
     (into (keys nmap))
     (into (apply concat (map second nmap)))))
 
-(defn- find-cycle [neighbours]
+  (defn- find-cycle [neighbours]
   "Check if the list of edges contains a cycle and if so, return the set of variable names that trigger a cycle"
 
   ; FIXME: Check for a -> a dependencies -- aren't caught by the algorithm below :)
-
-  (let [G (struct directed-graph (all-names neighbours) neighbours)]
-    (first (filter #(> (count %) 1) (scc G)))))
+  (let [self-dep (first (filter #(contains? (second %) (first %)) neighbours))]
+    (if (not (nil? self-dep))
+      (second self-dep)
+      (let [G (struct directed-graph (all-names neighbours) neighbours)]
+        (first (filter #(> (count %) 1) (scc G)))))))
 
 (defn check-form [form]
   "Check the dependencies of the given form and raise an error if there is a cycle in them"
   (let [c (find-cycle (element-deps form []))]
     (if (not (nil? c))
-      (checking-error (str "These variables form a dependency cycle: " (vec c))))))
+      (checking-error (str "These variables all depend on each other: " (vec c))))))
 
 ;---------------------------------------------------------------------------
 ; Tests
@@ -70,6 +72,6 @@
 
 (deftest test-cycle
          (let [E1 {'a #{'b}, 'b #{'c}, 'c #{'d}}]
-           (is (nil? (cycle? E1))))
+           (is (nil? (find-cycle E1))))
          (let [E2 {'a #{'b}, 'b #{'c}, 'c #{'a}}]
-           (is (= true (cycle? E2)))))
+           (is (= true (find-cycle E2)))))
