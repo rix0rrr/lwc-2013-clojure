@@ -8,10 +8,10 @@
   (let [^java.awt.Component w (to-widget target)]
     (.isFocusOwner w)))
 
-(defn- create-widget [widget caption value-key event-type getter setter value]
+(defn- create-widget [widget label value-key event-type getter setter value]
   (let [panel (mig-panel
                 :constraints ["insets 3 20 3 20" "[400px, al left|100px, fill]"]
-                :items [[(label :text caption :h-text-position :left)] [widget]])]
+                :items [[label] [widget]])]
     (config! widget value-key (setter value))
 
     (reify interactive-widget
@@ -40,14 +40,26 @@
 
       (widget-panel [this] panel))))
 
-(defn- create-correct-widget [type value caption]
+(defn- create-correct-widget [type value caption attributes]
   "Render a single widget of a given type"
+
+  (defn- with-attrs [factory]
+    "Instantiate seesaw factory with attributes
+
+    Attributes are a map, converted to a list"
+    (apply factory (mapcat identity (get attributes :widget {}))))
+
+  (defn- make-label []
+    (let [args (concat [:text caption :h-text-position :left] (mapcat identity (get attributes :label {})))]
+      (prn args)
+      (apply label args)))
+
   (case type
-    number   (create-widget (text)     caption :text :key-released to-int from-int value)
-    text     (create-widget (text)     caption :text :key-released from-string to-string value)
-    checkbox (create-widget (checkbox) caption :selected? :action from-bool to-bool value)
-    label    (create-widget (label)    caption :text :action from-string to-string value)
-             (create-widget (label)    (str "Unknown widget type " type) :text :key-released from-string to-string value))) ; Event won't ever happen
+    number   (create-widget (with-attrs text)     (make-label) :text :key-released to-int from-int value)
+    text     (create-widget (with-attrs text)     (make-label) :text :key-released from-string to-string value)
+    checkbox (create-widget (with-attrs checkbox) (make-label) :selected? :action from-bool to-bool value)
+    label    (create-widget (with-attrs label)    (make-label) :text :action from-string to-string value)
+             (create-widget (with-attrs label)    (label (str "Unknown widget type " type)) :text :key-released from-string to-string value))) ; Event won't ever happen
 
 
 (defn repack-on-resize [frame]
@@ -64,8 +76,8 @@
     (init [this]
       (native!))
 
-    (new-widget [this type value caption]
-      (create-correct-widget type value caption))
+    (new-widget [this name type value caption attributes]
+      (create-correct-widget type value caption attributes))
 
     (new-group [this widgets]
       (create-group widgets))

@@ -1,16 +1,19 @@
 (ns ql.questionnaire
-  (use ql.ql ql.expr ql.gui-viewer clojure.pprint))
+  (use ql.ql ql.qls ql.expr ql.gui-viewer clojure.pprint))
 
 (defform box1-house-owning
-    [boolean has-sold-house   "Did you sell a house in 2010?"]
-    [boolean has-bought-house "Did you buy a house in 2010?"]
-    [boolean has-maint-loan   "Did you enter a loan for maintenance/reconstruction?"]
-    [group has-sold-house
-     [currency selling-price "Price the house was sold for"]
-     [currency private-debt  "Private debts for the sold house"]]
-    [calc value-residue (- selling-price private-debt) "Value residue"]
-    [calc twice (* 2 value-residue) "Twice that"]
-     )
+         [boolean has-sold-house   "Did you sell a house in 2010?"]
+         [boolean has-bought-house "Did you buy a house in 2010?"]
+         [boolean has-maint-loan   "Did you enter a loan for maintenance/reconstruction?"]
+         [group has-sold-house
+          [currency selling-price "Price the house was sold for"]
+          [currency private-debt  "Private debts for the sold house"]]
+         [calc value-residue (- selling-price private-debt) "Value residue"]
+         [calc twice (* 2 value-residue) "Twice that"])
+
+(defstyles blue-label
+           [value-residue {:label {:foreground "blue" :font {:size 20}}}]
+           [twice         {:label {:background "green"}}])
 
 #_(defform illegal-cyclic-form
          [group x
@@ -19,6 +22,7 @@
           [boolean x "X?"]])
 
 (defn -main []
-  (box1-house-owning gui-renderer {}))
+  (let [renderer (blue-label gui-renderer)]
+    (box1-house-owning renderer {})))
 
 (-main)

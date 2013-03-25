@@ -26,10 +26,10 @@
 
 (defprotocol form-renderer
   "Protocol for form renderers"
-  (init [x])
-  (new-widget [x type value caption])
-  (new-group [x widgets])
-  (display [x widget]))
+  (init       [x])
+  (new-widget [x name type value caption attributes])
+  (new-group  [x widgets])
+  (display    [x widget]))
 
 (defprotocol form-element
   "Protocol for form elements"
@@ -124,14 +124,14 @@
   (match [element]
          [['calc  name expr caption]]  `(output-element '~name
                                                         ~(expr-fn expr (keys values))
-                                                        (new-widget ~renderer '~(widget-for-type 'calc) ~(values name) ~caption))
+                                                        (new-widget ~renderer (quote ~name) '~(widget-for-type 'calc) ~(values name) ~caption {}))
                                                 
          [['group expr & subelements]] `(group-element ~renderer
                                                        ~(expr-fn expr (keys values))
                                                        ~@(map #(create-elements % renderer values) subelements))
 
          [[type   name caption]]      `(input-element '~name
-                                                      (new-widget ~renderer '~(widget-for-type type) ~(values name) ~caption))
+                                                      (new-widget ~renderer (quote ~name) '~(widget-for-type type) ~(values name) ~caption {}))
          :else (invalid-ql (str "Unrecogized QL form: " element))))
 
 (defn variables [element]
