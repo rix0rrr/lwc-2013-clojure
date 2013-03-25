@@ -12,8 +12,11 @@
          [calc twice (* 2 value-residue) "Twice that"])
 
 (defstyles blue-label
-           [value-residue {:label {:foreground "blue" :font {:size 20}}}]
+           [value-residue {:label {:foreground "blue"}}]
            [twice         {:label {:background "green"}}])
+
+(defstyles big-label
+           [value-residue {:label {:font {:size 20}}}])
 
 #_(defform illegal-cyclic-form
          [group x
@@ -22,7 +25,9 @@
           [boolean x "X?"]])
 
 (defn -main []
-  (let [renderer (blue-label gui-renderer)]
+  (let [renderer (-> gui-renderer
+                   (blue-label)
+                   (big-label))]
     (box1-house-owning renderer {})))
 
 (-main)
