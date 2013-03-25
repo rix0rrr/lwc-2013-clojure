@@ -16,7 +16,8 @@
            [twice         {:label {:background "green"}}])
 
 (defstyles big-label
-           [value-residue {:label {:font {:size 20}}}])
+           [value-residue {:label {:font {:size 20}}}]
+           [selling-price {:widget {:font {:size 24}}}])
 
 #_(defform illegal-cyclic-form
          [group x

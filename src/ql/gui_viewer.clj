@@ -51,7 +51,6 @@
 
   (defn- make-label []
     (let [args (concat [:text caption :h-text-position :left] (mapcat identity (get attributes :label {})))]
-      (prn args)
       (apply label args)))
 
   (case type
