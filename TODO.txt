@@ -1,17 +1,13 @@
 QL
-    - Return undefined for invisible components
     - Type derivation for calc 
     - Export values
-    - Multiple assignments of same value
 
 QLS
     - Grouping
     - Styling
     - Overriding widget types
-    -
     - Checking of QLS against QL
 
 STATIC CHECKING
-    - Cyclic dependencies
     - Type checking
     - Determinism

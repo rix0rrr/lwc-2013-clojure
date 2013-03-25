@@ -7,15 +7,18 @@
     [boolean has-maint-loan   "Did you enter a loan for maintenance/reconstruction?"]
     [group has-sold-house
      [currency selling-price "Price the house was sold for"]
-     [currency private-debt  "Private debts for the sold house"]
-     [calc value-residue (- selling-price private-debt) "Value residue"]
-     [calc twice (* 2 value-residue) "Twice that"]
-     ])
+     [currency private-debt  "Private debts for the sold house"]]
+    [calc value-residue (- selling-price private-debt) "Value residue"]
+    [calc twice (* 2 value-residue) "Twice that"]
+     )
 
-(defform illegal-cyclic-form
+#_(defform illegal-cyclic-form
          [group x
-          [boolean x "X?"]]
-         )
+          [boolean y "Y?"]]
+         [group y
+          [boolean x "X?"]])
 
 (defn -main []
   (box1-house-owning gui-renderer {}))
+
+(-main)

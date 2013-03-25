@@ -1,5 +1,6 @@
 (ns ql.gui-viewer
   (:use seesaw.core
+        seesaw.mig
         ql.ql ql.expr
         [clojure.core.match :only [match]]))
 
@@ -8,8 +9,9 @@
     (.isFocusOwner w)))
 
 (defn- create-widget [widget caption value-key event-type getter setter value]
-  (let [panel (horizontal-panel
-                :items [(label :text caption :h-text-position :left) widget])]
+  (let [panel (mig-panel
+                :constraints ["insets 3 20 3 20" "[400px, al left|100px, fill]"]
+                :items [[(label :text caption :h-text-position :left)] [widget]])]
     (config! widget value-key (setter value))
 
     (reify interactive-widget
