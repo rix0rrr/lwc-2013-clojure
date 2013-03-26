@@ -4,8 +4,6 @@ QL
 
 QLS
     - Grouping
-    - Styling
-    - Overriding widget types
     - Checking of QLS against QL
 
 STATIC CHECKING
