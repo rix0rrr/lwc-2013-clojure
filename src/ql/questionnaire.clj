@@ -12,6 +12,7 @@
          [calc twice (* 2 value-residue) "Twice that"])
 
 (defstyles blue-label
+           [has-sold-house {:type :radio-group}]
            [value-residue {:label {:foreground "blue"}}]
            [twice         {:label {:background "green"}}])
 

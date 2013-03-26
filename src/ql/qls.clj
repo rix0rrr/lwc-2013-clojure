@@ -5,17 +5,20 @@
   (vec (map (fn [x]
            [`(quote ~(first x)) (second x)]) ls)))
 
+(defn recursive-merge [a b]
+  (merge-with (fn [a b] (if (seq? a) (recursive-merge a b) b)) a b))
+
 (defmacro defstyles [name & body]
-  `(let [control-map# (into {} ~(quote-heads body))]
+  `(let [override-map# (into {} ~(quote-heads body))]
     (defn ~name [renderer#]
        (reify form-renderer
 
          (init [x]
            (init renderer#))
 
-         (new-widget [x name# type# value# caption# attributes#]
-           (new-widget renderer# name# type# value# caption#
-                       (merge-with merge attributes# (get control-map# name# {}))))
+         (new-widget [x name# value# caption# attributes#]
+           (new-widget renderer# name# value# caption#
+                       (recursive-merge attributes# (get override-map# name# {}))))
 
            (new-group [x widgets#]
                       (new-group renderer# widgets#))
