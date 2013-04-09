@@ -95,22 +95,21 @@
   frame)
 
 (def gui-renderer
-  (reify form-renderer
-    (init [this]
-      (native!))
+  (let [my-frame (frame :title "No name yet" :resizable? false)]
+    (show! my-frame)
+    (reify form-renderer
+      (init [this]
+        (native!))
 
-    (new-widget [this name value caption attributes]
-      (create-correct-widget value caption attributes))
+      (new-widget [this name value caption attributes]
+        (create-correct-widget value caption attributes))
 
-    (new-group [this widgets]
-      (create-group widgets))
+      (new-group [this widgets]
+        (create-group widgets))
 
-    (display [this widget]
-      (->
-        (frame :title "No name yet"
-               :resizable? false
-               :content (grid-panel :columns 2
-                                    :items [(widget-panel widget)]))
-        (pack!)
-        (repack-on-resize)
-        (show!)))))
+      (display [this widget]
+        (->
+          (config! my-frame :content (grid-panel :columns 2
+                                      :items [(widget-panel widget)]))
+          (pack!)
+          (repack-on-resize))))))
