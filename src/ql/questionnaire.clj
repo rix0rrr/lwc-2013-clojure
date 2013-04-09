@@ -26,10 +26,10 @@
          [group y
           [boolean x "X?"]])
 
-(defn -main []
+#_(defn -main []
   (let [renderer (-> gui-renderer
                    (blue-label)
                    (big-label))]
     (box1-house-owning renderer {})))
 
-(-main)
+#_(-main)

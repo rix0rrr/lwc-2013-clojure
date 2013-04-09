@@ -1,9 +1,11 @@
 (ns ql.editor
   (use seesaw.core
-       seesaw.mig))
+       clojure.pprint
+       seesaw.mig)
+  (import java.io.StringWriter))
 
-(defn editor []
-  (let [input (text :multi-line? true :wrap-lines? true :tab-size 4)
+(defn editor [initial-value]
+  (let [input (text :multi-line? true :wrap-lines? true :tab-size 4 :text initial-value)
         status (text :multi-line? true :editable? false :wrap-lines? true)]
 
     (defn program-text [] (text input))
@@ -30,4 +32,18 @@
       (pack!)
       (show!))))
 
-(editor)
+(defn pprint-str [x]
+  (let [w (StringWriter.)]
+    (pprint x w)
+    (.toString w)))
+
+(defn -main []
+  (editor "(defform box1-house-owning
+                  [boolean has-sold-house   \"Did you sell a house in 2010?\"]
+                  [boolean has-bought-house \"Did you buy a house in 2010?\"]
+                  [boolean has-maint-loan   \"Did you enter a loan for maintenance/reconstruction?\"]
+                  [group has-sold-house
+                     [currency selling-price \"Price the house was sold for\"]
+                     [currency private-debt  \"Private debts for the sold house\"]]
+                  [calc value-residue (- selling-price private-debt) \"Value residue\"]
+                  [calc twice (* 2 value-residue) \"Twice that\"])"))

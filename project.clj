@@ -7,4 +7,4 @@
                  [seesaw "1.4.2"]]
   :profiles {:dev {:dependencies [[vimclojure/server "2.3.6"]]
                    :plugins [[org.clojars.autre/lein-vimclojure "1.0.0"]]}}
-  :main ql.questionnaire)
+  :main ql.editor)
